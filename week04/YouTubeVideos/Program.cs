@@ -1,93 +1,170 @@
 using System;
 using System.Collections.Generic;
 
-// Comment class
-public class Comment
-{
-    public string Name { get; }
-    public string Text { get; }
-
-    public Comment(string name, string text)
-    {
-        Name = name;
-        Text = text;
-    }
-}
-
-// Video class
-public class Video
-{
-    public string Title { get; }
-    public string Author { get; }
-    public int Length { get; }
-    private List<Comment> comments = new List<Comment>();
-
-    public Video(string title, string author, int length)
-    {
-        Title = title;
-        Author = author;
-        Length = length;
-    }
-
-    public void AddComment(Comment comment)
-    {
-        comments.Add(comment);
-    }
-
-    public int GetNumberOfComments()
-    {
-        return comments.Count;
-    }
-
-    public List<Comment> GetComments()
-    {
-        return comments;
-    }
-}
-
-// Program class
 class Program
 {
     static void Main(string[] args)
     {
-        // Create list of videos
-        List<Video> videos = new List<Video>();
+        // First order - USA customer
+        Address address1 = new Address("123 Main St", "New York", "NY", "USA");
+        Customer customer1 = new Customer("Alice Johnson", address1);
 
-        // Video 1
-        Video video1 = new Video("Learn C# in 10 Minutes", "CodeWithGifty", 600);
-        video1.AddComment(new Comment("Alice", "This was super helpful, thank you!"));
-        video1.AddComment(new Comment("Bob", "I love how concise this is."));
-        video1.AddComment(new Comment("Charlie", "More videos like this, please!"));
-        videos.Add(video1);
+        Product product1 = new Product("USB Cable", "P001", 5.99, 3);
+        Product product2 = new Product("Keyboard", "P002", 25.50, 1);
 
-        // Video 2
-        Video video2 = new Video("Micro:bit Projects for Kids", "STEMMinds", 850);
-        video2.AddComment(new Comment("Diana", "My students loved this!"));
-        video2.AddComment(new Comment("Ethan", "Great resource for teachers."));
-        video2.AddComment(new Comment("Fay", "Can you do one on sensors?"));
-        videos.Add(video2);
+        Order order1 = new Order(customer1);
+        order1.AddProduct(product1);
+        order1.AddProduct(product2);
 
-        // Video 3
-        Video video3 = new Video("Python for Data Analysis", "DataAcademy", 1200);
-        video3.AddComment(new Comment("George", "Clear and well-explained."));
-        video3.AddComment(new Comment("Hana", "Perfect for beginners."));
-        video3.AddComment(new Comment("Ivan", "Subscribed!"));
-        videos.Add(video3);
+        Console.WriteLine("ORDER 1:");
+        Console.WriteLine("Packing Label:\n" + order1.GetPackingLabel());
+        Console.WriteLine("Shipping Label:\n" + order1.GetShippingLabel());
+        Console.WriteLine("Total Price: $" + order1.GetTotalPrice());
+        Console.WriteLine();
 
-        // Display all video information
-        foreach (Video video in videos)
+        // Second order - international customer
+        Address address2 = new Address("456 Maple Rd", "Toronto", "ON", "Canada");
+        Customer customer2 = new Customer("Carlos Martinez", address2);
+
+        Product product3 = new Product("Wireless Mouse", "P003", 15.75, 2);
+        Product product4 = new Product("Monitor", "P004", 150.00, 1);
+
+        Order order2 = new Order(customer2);
+        order2.AddProduct(product3);
+        order2.AddProduct(product4);
+
+        Console.WriteLine("ORDER 2:");
+        Console.WriteLine("Packing Label:\n" + order2.GetPackingLabel());
+        Console.WriteLine("Shipping Label:\n" + order2.GetShippingLabel());
+        Console.WriteLine("Total Price: $" + order2.GetTotalPrice());
+    }
+}
+
+// ---------------- Address Class ----------------
+class Address
+{
+    private string _street;
+    private string _city;
+    private string _stateOrProvince;
+    private string _country;
+
+    public Address(string street, string city, string stateOrProvince, string country)
+    {
+        _street = street;
+        _city = city;
+        _stateOrProvince = stateOrProvince;
+        _country = country;
+    }
+
+    public bool IsInUSA()
+    {
+        return _country.Trim().ToUpper() == "USA";
+    }
+
+    public string GetFullAddress()
+    {
+        return $"{_street}\n{_city}, {_stateOrProvince}\n{_country}";
+    }
+}
+
+// ---------------- Customer Class ----------------
+class Customer
+{
+    private string _name;
+    private Address _address;
+
+    public Customer(string name, Address address)
+    {
+        _name = name;
+        _address = address;
+    }
+
+    public bool IsInUSA()
+    {
+        return _address.IsInUSA();
+    }
+
+    public string GetName()
+    {
+        return _name;
+    }
+
+    public string GetAddress()
+    {
+        return _address.GetFullAddress();
+    }
+}
+
+// ---------------- Product Class ----------------
+class Product
+{
+    private string _name;
+    private string _productId;
+    private double _price;
+    private int _quantity;
+
+    public Product(string name, string productId, double price, int quantity)
+    {
+        _name = name;
+        _productId = productId;
+        _price = price;
+        _quantity = quantity;
+    }
+
+    public double GetTotalCost()
+    {
+        return _price * _quantity;
+    }
+
+    public string GetPackingLabel()
+    {
+        return $"{_name} (ID: {_productId})";
+    }
+}
+
+// ---------------- Order Class ----------------
+class Order
+{
+    private List<Product> _products;
+    private Customer _customer;
+
+    public Order(Customer customer)
+    {
+        _customer = customer;
+        _products = new List<Product>();
+    }
+
+    public void AddProduct(Product product)
+    {
+        _products.Add(product);
+    }
+
+    public double GetTotalPrice()
+    {
+        double total = 0;
+        foreach (Product product in _products)
         {
-            Console.WriteLine($"Title: {video.Title}");
-            Console.WriteLine($"Author: {video.Author}");
-            Console.WriteLine($"Length: {video.Length} seconds");
-            Console.WriteLine($"Number of Comments: {video.GetNumberOfComments()}");
-
-            foreach (Comment comment in video.GetComments())
-            {
-                Console.WriteLine($"  {comment.Name}: {comment.Text}");
-            }
-
-            Console.WriteLine(new string('-', 50)); // Divider
+            total += product.GetTotalCost();
         }
+
+        // Add shipping
+        total += _customer.IsInUSA() ? 5 : 35;
+
+        return total;
+    }
+
+    public string GetPackingLabel()
+    {
+        string label = "";
+        foreach (Product product in _products)
+        {
+            label += product.GetPackingLabel() + "\n";
+        }
+        return label.TrimEnd();
+    }
+
+    public string GetShippingLabel()
+    {
+        return $"{_customer.GetName()}\n{_customer.GetAddress()}";
     }
 }
